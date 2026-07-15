@@ -9,6 +9,11 @@
 *.docx
 *.xlsx
 /Netlist_Schematic1_*.enet
+/SCH_Schematic1_*.png
+/BQ25756_MCU_CONTROL.txt
+/_*.png
+/*_page*.png
+/tmp/
 
 # Operating-system files
 Thumbs.db

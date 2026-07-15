@@ -1,97 +1,97 @@
 # DPUSB2TypeC KVM
 
-Открытый аппаратный проект настольного KVM/док-устройства с двумя входами USB-C от ноутбуков, одним полноразмерным DisplayPort-выходом, общим USB 2.0 hub и управляемой USB-C Power Delivery.
+An open-source hardware project for a desktop KVM/docking device with two laptop USB-C inputs, one full-size DisplayPort output, a shared USB 2.0 hub, and managed USB-C Power Delivery.
 
-> **Статус:** активная разработка. Проект пока не готов к производству или заказу PCBA.
+> **Status:** active development. The project is not yet ready for manufacturing or PCBA ordering.
 
-## Цель проекта
+## Project goals
 
-Устройство должно:
+The device is intended to:
 
-- принимать DisplayPort Alt Mode от двух ноутбуков через USB-C;
-- переключать выбранный видеопоток на один полноразмерный DisplayPort-выход;
-- переключать общий USB 2.0 hub между ноутбуками;
-- заряжать подключённые ноутбуки через USB-C Power Delivery;
-- принимать питание от отдельного USB-C PD-входа;
-- управлять доступным бюджетом мощности;
-- предоставлять локальный интерфейс на STM32, круглом дисплее GC9A01 и энкодере.
+- accept DisplayPort Alt Mode from two laptops over USB-C;
+- switch the selected video stream to one full-size DisplayPort output;
+- switch a shared USB 2.0 hub between the laptops;
+- charge the connected laptops through USB-C Power Delivery;
+- receive power from a dedicated USB-C PD input;
+- manage the available power budget;
+- provide a local interface using an STM32 MCU, a round GC9A01 display, and an encoder.
 
-Целевой верхний режим видеотракта — DisplayPort 2.1/UHBR20. Его достижение зависит от окончательного выбора stackup, контролируемого импеданса, потерь канала и результатов SI-проверки.
+The upper target for the video path is DisplayPort 2.1/UHBR20. Achieving it depends on the final stackup, controlled impedance, channel loss, and signal-integrity verification.
 
-## Основные узлы
+## Main components
 
-| Функция | Компонент |
+| Function | Component |
 |---|---|
-| MCU и системное управление | STM32G474RBT6 |
-| Входной USB-C PD sink | TPS26750 |
-| Два laptop USB-C PD-порта | TPS65988 |
-| Дополнительный downstream USB-C PD-порт | TPS65987D |
-| Программируемые 4-switch buck-boost преобразователи | BQ25756 |
-| Always-on 3.3 V | LMR51610Y |
-| Входной eFuse / power-path | TPS26630 |
+| MCU and system control | STM32G474RBT6 |
+| USB-C PD input sink | TPS26750 |
+| Two laptop USB-C PD ports | TPS65988 |
+| Additional downstream USB-C PD port | TPS65987D |
+| Programmable four-switch buck-boost converters | BQ25756 |
+| Always-on 3.3 V supply | LMR51610Y |
+| Input eFuse / power path | TPS26630 |
 | DP/USB4 high-speed mux | TMUXHS4612 |
 | DP/USB4 linear redriver | PI2DPX2020 |
 | USB 2.0 hub | USB2514B |
 | USB 2.0 2:1 mux | FSUSB42 |
-| Защита CC/SBU | TPD4S480 |
+| CC/SBU protection | TPD4S480 |
 
-## Структура репозитория
+## Repository structure
 
 ```text
 docs/
-  PROJECT_PLAN.md       — что уже сделано и что нужно сделать
-  PROJECT_PROGRESS.md   — хронология и пошаговый прогресс
-  BQ25756_MCU_CONTROL.txt — памятка по управлению BQ25756 от MCU
+  PROJECT_PLAN.md         — completed work and remaining tasks
+  PROJECT_PROGRESS.md     — chronological, step-by-step project progress
+  BQ25756_MCU_CONTROL.txt — reference for controlling BQ25756 from the MCU
 hardware/
-  KVM.eprj2             — актуальный исходный проект EasyEDA
-  backups/              — контрольный переносимый backup EasyEDA
-  netlists/             — актуальный экспорт netlist
-  schematics/           — изображения листов схемы для быстрого просмотра
+  KVM.eprj2               — current EasyEDA project source
+  backups/                — portable EasyEDA milestone backups
+  netlists/               — exported netlists
+  schematics/             — schematic sheet images for quick viewing
 README.md
 ```
 
-## Открытие проекта
+## Opening the project
 
-1. Установите EasyEDA Professional Edition.
-2. Откройте `hardware/KVM.eprj2` как локальный проект.
-3. Если основной файл не открывается, импортируйте последний файл из `hardware/backups/`.
-4. После любых изменений заново экспортируйте netlist и синхронизируйте PCB со схемой.
+1. Install EasyEDA Professional Edition.
+2. Open `hardware/KVM.eprj2` as a local project.
+3. If the main file cannot be opened, import the newest file from `hardware/backups/`.
+4. After making changes, export a new netlist and synchronize the PCB with the schematic.
 
-## Текущее состояние проверки
+## Current verification status
 
-На 2026-07-15:
+As of 2026-07-15:
 
-- актуальный netlist содержит 372 компонента, 223 именованные сети и 281 неподключённый вывод;
-- MCU заменён на STM32G474RBT6; выполнена базовая обвязка и распределение управляющих сигналов;
-- входной USB-C0 power-path собран на TPS26750, TPD4S480 и TPS26630 с совместным разрешением от MCU и PD-контроллера;
-- always-on преобразователь заменён на LMR51610Y;
-- переход выходных преобразователей на BQ25756 продолжается: в netlist присутствуют три BQ25756 и ещё три старых TPS55288;
-- последний schematic DRC при экспорте netlist: 1 error и 19 warnings — их необходимо закрыть до синхронизации PCB;
-- PCB остаётся несинхронизированной с активно изменяемой схемой;
-- проект нельзя передавать в JLCPCB до завершения схемы, обновления PCB, трассировки и полного набора проверок.
+- the current netlist contains 372 components, 223 named nets, and 281 unconnected pins;
+- the MCU has been changed to STM32G474RBT6, with its basic support circuitry and control-signal assignment in place;
+- the USB-C0 input power path is built around TPS26750, TPD4S480, and TPS26630, with joint enable control from the MCU and PD controller;
+- the always-on converter has been changed to LMR51610Y;
+- migration of the output converters to BQ25756 is still in progress: the netlist contains three BQ25756 devices and three legacy TPS55288 devices;
+- the latest schematic DRC reported during netlist export is 1 error and 19 warnings; these must be resolved before PCB synchronization;
+- the PCB is not synchronized with the actively changing schematic;
+- the project must not be submitted to JLCPCB until the schematic, PCB update, routing, and all required reviews are complete.
 
-Подробный порядок работ находится в [PROJECT_PLAN.md](docs/PROJECT_PLAN.md), а история — в [PROJECT_PROGRESS.md](docs/PROJECT_PROGRESS.md).
+See [PROJECT_PLAN.md](docs/PROJECT_PLAN.md) for the work plan and [PROJECT_PROGRESS.md](docs/PROJECT_PROGRESS.md) for the project history.
 
-## Производство в JLCPCB
+## JLCPCB manufacturing
 
-Перед первым заказом необходимо получить безошибочные:
+Before the first order, the following outputs and checks must be complete and error-free:
 
 - schematic ERC/DRC;
-- синхронизацию schematic ↔ PCB;
+- schematic-to-PCB synchronization;
 - PCB DRC;
-- Gerber и drill-файлы;
-- BOM с актуальными LCSC-номерами;
-- CPL/Pick-and-Place;
+- Gerber and drill files;
+- BOM with current LCSC part numbers;
+- CPL/Pick-and-Place file;
 - assembly drawings;
-- stackup и требования к контролируемому импедансу;
-- отдельную проверку high-speed, power integrity, thermal и mechanical constraints.
+- stackup and controlled-impedance requirements;
+- separate high-speed, power-integrity, thermal, and mechanical reviews.
 
-Наличие деталей LCSC должно проверяться непосредственно перед заказом. Некоторые критические позиции уже имеют низкий остаток или не находятся по сохранённому LCSC-номеру.
+LCSC availability must be checked immediately before ordering. Some critical parts already have low stock or cannot be found under the saved LCSC number.
 
-## Предупреждение
+## Warning
 
-Это незавершённый инженерный проект. Силовые USB-C PD-цепи могут работать с повышенными напряжениями и токами, а ошибочная схема или разводка способна повредить подключённые ноутбуки, монитор, источник питания или саму плату. Не используйте текущие производственные файлы без независимой инженерной проверки.
+This is an unfinished engineering project. The USB-C PD power paths can operate at elevated voltages and currents. An incorrect schematic or PCB layout may damage connected laptops, the monitor, the power source, or the board itself. Do not use the current production files without an independent engineering review.
 
-## Лицензия
+## License
 
-Лицензия проекта пока не выбрана. До добавления файла `LICENSE` стандартные авторские права сохраняются за автором.
+No project license has been selected yet. Until a `LICENSE` file is added, standard copyright remains with the author.

@@ -1,75 +1,75 @@
-# Прогресс проекта DPUSB2TypeC KVM
+# DPUSB2TypeC KVM Project Progress
 
-Этот файл фиксирует развитие проекта по шагам. Детальные будущие задачи находятся в `PROJECT_PLAN.md`.
+This file records the project history step by step. Detailed future tasks are maintained in `PROJECT_PLAN.md`.
 
-## Сводка
+## Summary
 
-Текущий этап: **разработка схемы / до синхронизации PCB**.
+Current stage: **schematic development / before PCB synchronization**.
 
-Оценка готовности по направлениям на 2026-07-15:
+Status by area as of 2026-07-15:
 
-| Направление | Состояние |
+| Area | Status |
 |---|---|
-| Системная архитектура | Сформирована |
-| Power architecture | Частично реализована |
-| MCU/AON | Частично реализовано |
-| Два laptop USB-C PD-порта | Частично реализованы |
-| DC-IN TPS26750 | Почти собран, есть обязательные исправления |
-| Downstream TPS65987D | Компонент добавлен, соединения не сделаны |
-| DP mux/redriver | Компоненты добавлены, соединения не сделаны |
-| USB 2.0 hub/mux | Компоненты добавлены, соединения не сделаны |
-| PCB placement | Частично выполнен |
-| PCB routing | Начальная/незавершённая стадия |
-| JLCPCB production package | Не начат |
-| Firmware | Архитектура описана, реализация не начата |
+| System architecture | Defined |
+| Power architecture | Partially implemented |
+| MCU/AON | Partially implemented |
+| Two laptop USB-C PD ports | Partially implemented |
+| TPS26750 DC input | Nearly assembled; mandatory fixes remain |
+| Downstream TPS65987D | Component added; connections not completed |
+| DP mux/redriver | Components added; connections not completed |
+| USB 2.0 hub/mux | Components added; connections not completed |
+| PCB placement | Partially completed |
+| PCB routing | Initial/incomplete stage |
+| JLCPCB production package | Not started |
+| Firmware | Architecture documented; implementation not started |
 
-## Шаг 1. Определение назначения устройства
+## Step 1. Define the device purpose
 
-Статус: **выполнено**.
+Status: **completed**.
 
-- Определено устройство класса KVM/USB-C dock.
-- Приняты два laptop USB-C входа, один DisplayPort output и общий USB 2.0 hub.
-- Добавлен отдельный USB-C PD input.
-- Определена необходимость распределения мощности и локального UI.
+- Defined the device as a KVM/USB-C docking station.
+- Selected two laptop USB-C inputs, one DisplayPort output, and a shared USB 2.0 hub.
+- Added a dedicated USB-C PD input.
+- Identified the need for power-budget management and a local user interface.
 
-## Шаг 2. Выбор базовой архитектуры
+## Step 2. Select the base architecture
 
-Статус: **выполнено на уровне концепции**.
+Status: **completed at the concept level**.
 
 - MCU: STM32G474RBT6.
 - Input PD: TPS26750.
 - Dual laptop PD: TPS65988.
 - Future downstream Type-C PD: TPS65987D.
-- Programmable VBUS/system rails: BQ25756; переход со старых TPS55288 ещё не завершён.
+- Programmable VBUS/system rails: BQ25756; migration from the legacy TPS55288 is not finished.
 - Always-on rail: LMR51610Y.
 - Video path: TMUXHS4612 + PI2DPX2020.
 - USB2 KVM: USB2514B + FSUSB42.
-- Принята загрузка конфигураций PD-контроллеров из MCU без внешних SPI flash.
+- PD-controller configurations will be loaded by the MCU without external SPI flash devices.
 
-## Шаг 3. Проектирование питания и I2C
+## Step 3. Design power and I2C architecture
 
-Статус: **частично выполнено**.
+Status: **partially completed**.
 
-- Определена `+3V3_MCU` always-on rail.
-- Определена переключаемая `+3V3_SYS` через AP2553.
-- Собран базовый канал BQ25756 для системных +5 V и начато копирование архитектуры на USB-C выходы.
-- В актуальном netlist находятся три BQ25756; три старых TPS55288 ещё требуют замены или удаления.
-- Разделены I2C-шины PD-контроллеров и преобразователей.
-- Частично собраны converter stages, current shunts, AON6278, inductors и decoupling.
+- Defined the always-on `+3V3_MCU` rail.
+- Defined the switchable `+3V3_SYS` rail through AP2553.
+- Built the base BQ25756 channel for system +5 V and started copying the architecture to the USB-C outputs.
+- The current netlist contains three BQ25756 devices; three legacy TPS55288 devices still need to be replaced or removed.
+- Separated the I2C buses for the PD controllers and converters.
+- Partially built converter stages, current shunts, AON6278 MOSFET stages, inductors, and decoupling.
 
-Открыто:
+Open items:
 
-- полный power budget;
-- compensation и worst-case converter calculation;
-- аппаратный OVP/eFuse;
-- отдельный regulator 1.8 V для PI2DPX2020;
-- startup/fault sequencing.
+- complete power budget;
+- compensation and worst-case converter calculations;
+- hardware OVP/eFuse verification;
+- dedicated 1.8 V regulator for PI2DPX2020;
+- startup and fault sequencing.
 
-## Шаг 4. Сборка схемы EasyEDA
+## Step 4. Build the EasyEDA schematic
 
-Статус: **активная разработка**.
+Status: **active development**.
 
-Созданы листы:
+Created sheets:
 
 1. `MCU`;
 2. `2xUSB_PD`;
@@ -77,52 +77,53 @@
 4. `4xUSB2_HUB`;
 5. `DP2.1_MUX_REDRIVE`.
 
-В схеме на 2026-07-11 находится 238 компонентов. Все физические детали имеют footprint; исключение по MPN/LCSC — логические позиции `BOOT0_MCU` и `NRST_MCU`.
+As of 2026-07-11, the schematic contained 238 components. Every physical part had a footprint; the exceptions in MPN/LCSC fields were the logical `BOOT0_MCU` and `NRST_MCU` entries.
 
-## Шаг 5. Эволюция netlist
+## Step 5. Netlist evolution
 
-Статус: **зафиксировано**.
+Status: **recorded**.
 
-| Дата | Компоненты | Уникальные сети | Неподключённые выводы | Основное изменение |
+| Date | Components | Unique nets | Unconnected pins | Main change |
 |---|---:|---:|---:|---|
-| 2026-07-03 | 19 | 0 | 569 | Начальный набор ключевых IC |
-| 2026-07-04 | 50 | 20 | 605 | Добавлены DC-IN/питание и USB-related parts |
-| 2026-07-07 | 78 | 43 | 577 | Расширены силовые цепи и пассивы |
-| 2026-07-08 | 180 | 155 | 444 | Большое расширение PD/USB/MCU частей |
-| 2026-07-09 | 196 | 143 | 432 | Добавлены дополнительные силовые цепи |
-| 2026-07-10 | 238 | 174 | 342 | Добавлены защиты, hub/DP blocks и MCU support parts |
-| 2026-07-11 | 238 | 174 | 342 | Исправлены I2C pin mappings |
+| 2026-07-03 | 19 | 0 | 569 | Initial set of key ICs |
+| 2026-07-04 | 50 | 20 | 605 | Added DC input, power, and USB-related parts |
+| 2026-07-07 | 78 | 43 | Expanded power paths and passives |
+| 2026-07-08 | 180 | 155 | Major expansion of PD, USB, and MCU blocks |
+| 2026-07-09 | 196 | 143 | Added additional power paths |
+| 2026-07-10 | 238 | 174 | Added protection, hub/DP blocks, and MCU support parts |
+| 2026-07-11 | 238 | 174 | Corrected I2C pin mappings |
+| 2026-07-15 | 372 | 223 | 281 | MCU, USB-C0 power path, and BQ25756 migration checkpoint |
 
-Исправления 2026-07-11:
+Changes on 2026-07-11:
 
-- TPS65988 `I2C1_SCL` pin 27 подключён к `I2C_PD1_SCL`;
-- TPS65988 `I2C1_SDA` pin 28 подключён к `I2C_PD1_SDA`;
-- STM32 `I2C_SYS_SDA/SCL` перенесены на PA6/PA7, pins 23/24.
+- TPS65988 `I2C1_SCL` pin 27 connected to `I2C_PD1_SCL`;
+- TPS65988 `I2C1_SDA` pin 28 connected to `I2C_PD1_SDA`;
+- STM32 `I2C_SYS_SDA/SCL` moved to PA6/PA7, pins 23/24.
 
-## Шаг 6. Передача контекста проекта
+## Step 6. Project handoff
 
-Статус: **выполнено**.
+Status: **completed**.
 
-- Создан handoff-документ от 2026-07-11.
-- Зафиксированы архитектура, принятые решения, ограничения и открытые вопросы.
-- Сохранены локальные даташиты TI, ST, Diodes и сопутствующие application notes.
+- Created a handoff document dated 2026-07-11.
+- Recorded the architecture, accepted decisions, constraints, and open questions.
+- Saved local TI, ST, and Diodes datasheets plus related application notes.
 
-## Шаг 7. API-аудит EasyEDA
+## Step 7. EasyEDA API audit
 
-Статус: **выполнено 2026-07-11**.
+Status: **completed on 2026-07-11**.
 
-Проверено:
+Checked:
 
-- активный проект `KVM`;
-- одна board `Board1`;
-- одна схема из пяти листов;
-- документ `PCB1`;
-- поля MPN, LCSC и footprint;
-- соответствие schematic/PCB;
-- DRC schematic и PCB;
-- layers и high-speed rule structures.
+- active project `KVM`;
+- one board, `Board1`;
+- one schematic with five sheets;
+- `PCB1` document;
+- MPN, LCSC, and footprint fields;
+- schematic/PCB correspondence;
+- schematic and PCB DRC;
+- layers and high-speed rule structures.
 
-Результат:
+Result:
 
 - schematic parts: 238;
 - PCB components: 207;
@@ -135,67 +136,67 @@
 - net classes: 0;
 - equal-length groups: 0.
 
-## Шаг 8. Выявление блокирующих схемотехнических проблем
+## Step 8. Identify blocking schematic issues
 
-Статус: **выполнено; исправления ещё не внесены**.
+Status: **audit completed; findings must be rechecked against the latest netlist**.
 
-Найдены:
+The 2026-07-11 audit found:
 
-1. TPS26750 `POWER_PATH_EN` ошибочно соединён с GND при неиспользуемой функции.
-2. TPS26750 `NC` соединён с GND.
-3. TPS65988 `SPI_POCI` подтянут к 3.3 V вместо GND при отсутствии flash.
-4. `BOOT0_MCU` и `NRST_MCU` требуют решения по реальным footprints/BOM.
-5. Полностью неподключены U2, U4, U9, U10 и U14.
+1. TPS26750 `POWER_PATH_EN` incorrectly connected to GND when the function was unused.
+2. TPS26750 `NC` connected to GND.
+3. TPS65988 `SPI_POCI` pulled up to 3.3 V instead of GND when no flash was used.
+4. `BOOT0_MCU` and `NRST_MCU` required a decision on real footprints and BOM treatment.
+5. U2, U4, U9, U10, and U14 were completely unconnected.
 
-## Шаг 9. Предварительная проверка JLCPCB/LCSC
+## Step 9. Preliminary JLCPCB/LCSC check
 
-Статус: **выполнен предварительный снимок 2026-07-11**.
+Status: **preliminary snapshot completed on 2026-07-11**.
 
-- Большинство компонентов относится к Extended Parts.
-- Низкий остаток отмечен для TPS55288, PI2DPX2020, LMR51606 и TPS65988.
-- Сохранённые позиции TMUXHS4612 и GT-USB-7013C не найдены текущим каталог-поиском.
-- Финальная проверка stock и substitutes отложена до стабилизации схемы и перед заказом.
+- Most components are Extended Parts.
+- Low stock was observed for TPS55288, PI2DPX2020, LMR51606, and TPS65988.
+- The saved TMUXHS4612 and GT-USB-7013C items were not found in the catalog search used at the time.
+- Final stock and substitute checks are deferred until the schematic is stable and must be repeated immediately before ordering.
 
-## Шаг 10. Публикация проекта
+## Step 10. Publish the project
 
-Статус: **подготовлено локально**.
+Status: **completed**.
 
-- Создан README с описанием проекта.
-- Создан детальный план работ.
-- Создан журнал прогресса.
-- Подготовлен актуальный EasyEDA project source и последний netlist для открытого репозитория.
+- Created a project README.
+- Created a detailed project plan.
+- Created a progress log.
+- Published the EasyEDA source and netlist in the public repository.
 
-## Следующий шаг
+## Step 11. Rework the MCU and USB-C0
 
-Следующая инженерная работа: завершить замену оставшихся TPS55288 на четвёртый одинаковый канал BQ25756, затем переработать PD1/PD2 и их I2C/GPIO-связи с MCU. После этого нужен новый netlist и генеральная проверка питания до синхронизации PCB.
+Status: **checkpoint saved on 2026-07-15**.
 
-## Шаг 11. Переработка MCU и USB-C0
+- Replaced the MCU with STM32G474RBT6, providing four hardware I2C peripherals.
+- Added the basic MCU support circuitry: power, VDDA, reset, BOOT0/DFU, and an optional DNP external crystal.
+- Changed the always-on `+3V3_MCU` supply to LMR51610Y.
+- Built USB-C0 around TPS26750 and TPD4S480.
+- Added TPS26630 to the power path. EF0 enable is jointly controlled by MCU and PD0 through MOSFET logic.
+- Documented the startup sequence: MCU/PD0 boot from raw VBUS, PD0 configuration and negotiation, MCU contract validation, EF0 enable, PGOOD wait, and system-rail startup.
 
-Статус: **контрольная точка 2026-07-15**.
+## Step 12. Migrate to BQ25756
 
-- MCU заменён на STM32G474RBT6 с четырьмя аппаратными I2C.
-- Добавлена базовая обвязка MCU: питание, VDDA, reset, BOOT0/DFU и DNP-вариант внешнего кварца.
-- Always-on `+3V3_MCU` переведён на LMR51610Y.
-- USB-C0 собран вокруг TPS26750 и TPD4S480.
-- В силовой тракт добавлен TPS26630; включение EF0 разрешается совместно MCU и PD0 через MOSFET-логику.
-- Зафиксирована последовательность запуска: загрузка MCU/PD0 от сырого VBUS, настройка и переговоры PD0, проверка контракта MCU, открытие EF0, ожидание PGOOD и запуск системных шин.
+Status: **in progress**.
 
-## Шаг 12. Переход на BQ25756
+- Selected BQ25756RRVR as the common programmable four-switch buck-boost converter for system +5 V and USB-C outputs.
+- Built a base power stage with external AON6278 MOSFETs, inductor, shunts, bootstrap/REGN components, and control pins.
+- Created `BQ25756_MCU_CONTROL.txt` as a reference for the proposed MCU control flow.
+- The current netlist contains three BQ25756 devices and three remaining TPS55288 devices; migration is not complete.
+- Four identical channels, separate I2C routing, and another PD1/PD2 review are still required.
 
-Статус: **в процессе**.
+## Step 13. EasyEDA checkpoint
 
-- Выбран BQ25756RRVR как общий программируемый 4-switch buck-boost для системного +5 V и USB-C выходов.
-- Собрана базовая силовая ячейка с внешними AON6278, дросселем, шунтами, bootstrap/REGN и управляющими выводами.
-- Подготовлена памятка `BQ25756_MCU_CONTROL.txt` по предполагаемому управлению от MCU.
-- Актуальный netlist содержит три BQ25756 и три оставшихся TPS55288: миграция пока не завершена.
-- Требуется закончить четыре одинаковых канала, развести их по отдельным I2C и повторно проверить PD1/PD2.
+Status: **saved on 2026-07-15**.
 
-## Шаг 13. Контрольная точка EasyEDA
+- Saved the current `hardware/KVM.eprj2`.
+- Created the portable backup `hardware/backups/KVM_2026-07-15-23-10.epro2`.
+- Exported `hardware/netlists/Netlist_Schematic1_2026-07-15.enet`.
+- The netlist contains 372 components, 223 named nets, and 281 unconnected pins.
+- EasyEDA reported 1 schematic error and 19 warnings during export; they remain open.
 
-Статус: **сохранено 2026-07-15**.
+## Next step
 
-- Сохранён актуальный `hardware/KVM.eprj2`.
-- Создан переносимый backup `hardware/backups/KVM_2026-07-15-23-10.epro2`.
-- Экспортирован netlist `hardware/netlists/Netlist_Schematic1_2026-07-15.enet`.
-- Netlist содержит 372 компонента, 223 именованные сети и 281 неподключённый вывод.
-- При экспорте EasyEDA сообщил 1 schematic error и 19 warnings; они остаются открытыми.
+Complete the migration from the remaining TPS55288 devices to a fourth identical BQ25756 channel, then rework PD1/PD2 and their I2C/GPIO connections to the MCU. Export a new netlist and perform a full power-system review before synchronizing the PCB.

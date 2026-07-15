@@ -1,175 +1,175 @@
-# План проекта DPUSB2TypeC KVM
+# DPUSB2TypeC KVM Project Plan
 
-Обновлено: 2026-07-15
+Updated: 2026-07-15
 
-## Обозначения
+## Legend
 
-- `[x]` — выполнено и проверено на текущем уровне проекта.
-- `[~]` — начато или выполнено частично.
-- `[ ]` — не выполнено.
-- `BLOCKER` — блокирует производство или следующий этап.
+- `[x]` — completed and verified at the current project stage.
+- `[~]` — started or partially completed.
+- `[ ]` — not completed.
+- `BLOCKER` — prevents manufacturing or the next project stage.
 
-## Что уже сделано
+## Completed work
 
-### Архитектура
+### Architecture
 
-- [x] Определена общая архитектура KVM/док-станции.
-- [x] Выбраны роли двух laptop USB-C портов: Power Source + USB Data UFP + DP Sink/UFP_D.
-- [x] Выбран отдельный USB-C PD-вход питания.
-- [x] Выбран STM32G474RBT6 как центральный контроллер с четырьмя аппаратными I2C.
-- [x] Принята загрузка patch/config PD-контроллеров из Flash MCU без отдельных SPI flash.
-- [x] Разделены I2C-шины PD-контроллеров и программируемых преобразователей.
-- [x] Выбрана обновлённая архитектура питания: LMR51610Y, TPS26630, BQ25756 и AP2553.
-- [x] Выбраны основные видео- и USB-компоненты.
+- [x] Defined the overall KVM/docking-station architecture.
+- [x] Defined the roles of the two laptop USB-C ports: Power Source + USB Data UFP + DP Sink/UFP_D.
+- [x] Selected a dedicated USB-C PD power input.
+- [x] Selected STM32G474RBT6 as the central controller with four hardware I2C peripherals.
+- [x] Chosen to load PD-controller patches and configurations from MCU flash without separate SPI flash devices.
+- [x] Separated the I2C buses for PD controllers and programmable converters.
+- [x] Selected the updated power architecture based on LMR51610Y, TPS26630, BQ25756, and AP2553.
+- [x] Selected the main video and USB components.
 
-### Схема
+### Schematic
 
-- [x] Создан проект EasyEDA `KVM`.
-- [x] Созданы 5 листов: `MCU`, `2xUSB_PD`, `USB_DCIN`, `4xUSB2_HUB`, `DP2.1_MUX_REDRIVE`.
-- [~] Добавлены STM32G474, TPS26750, TPS65988, TPS65987D, TPS26630, три BQ25756, оставшиеся старые TPS55288 и основные силовые цепи.
-- [x] Добавлены USB-C/USB-A/DP-разъёмы и защита TPD4S480/TPD1E0B04.
-- [x] Исправлена разводка `I2C1_SCL/SDA` TPS65988 в netlist от 2026-07-11.
-- [x] Исправлен выбор выводов `I2C_SYS` STM32: PA6/PA7, pins 23/24.
-- [~] Блок USB-C0 собран на TPS26750, TPD4S480 и TPS26630; startup/power-path последовательность описана, но требует финальной проверки.
-- [~] Двухпортовый TPS65988 и два laptop power-converter канала собраны частично.
-- [~] MCU имеет питание, reset, BOOT0, USB DFU, внешний кварц как DNP-опцию и четыре I2C-шины, но GPIO map не завершён.
+- [x] Created the EasyEDA project `KVM`.
+- [x] Created five sheets: `MCU`, `2xUSB_PD`, `USB_DCIN`, `4xUSB2_HUB`, and `DP2.1_MUX_REDRIVE`.
+- [~] Added STM32G474, TPS26750, TPS65988, TPS65987D, TPS26630, three BQ25756 devices, the remaining legacy TPS55288 devices, and the main power paths.
+- [x] Added USB-C, USB-A, and DisplayPort connectors plus TPD4S480/TPD1E0B04 protection.
+- [x] Corrected the TPS65988 `I2C1_SCL/SDA` connections in the 2026-07-11 netlist.
+- [x] Corrected the STM32 `I2C_SYS` pin selection to PA6/PA7, pins 23/24.
+- [~] Built the USB-C0 block around TPS26750, TPD4S480, and TPS26630. The startup and power-path sequence is documented but still needs final verification.
+- [~] Partially built the dual-port TPS65988 block and two laptop power-converter channels.
+- [~] Added MCU power, reset, BOOT0, USB DFU, an optional DNP external crystal, and four I2C buses. The GPIO map is not finished.
 
-### PCB и проверка
+### PCB and verification
 
-- [x] Создан документ PCB1.
-- [~] На PCB перенесено 207 компонентов.
-- [x] Выполнен API-аудит EasyEDA и зафиксировано текущее состояние.
-- [x] Выполнено сравнение схемы, PCB и последнего netlist.
-- [x] Проверены локальные даташиты и предварительная доступность критических компонентов LCSC.
-- [x] Создана публичная документационная структура проекта.
+- [x] Created the PCB1 document.
+- [~] Transferred 207 components to the PCB.
+- [x] Performed an EasyEDA API audit and recorded the project state.
+- [x] Compared the schematic, PCB, and latest netlist.
+- [x] Checked the local datasheets and preliminary LCSC availability of critical components.
+- [x] Created the public project documentation structure.
 
-## Что нужно сделать
+## Remaining work
 
-> Снимок от 2026-07-15 является текущим. Замечания ниже, перенесённые из аудита 2026-07-11, необходимо повторно сверять с последним netlist перед исправлением.
+> The 2026-07-15 snapshot is current. Findings carried over from the 2026-07-11 audit must be rechecked against the latest netlist before they are changed.
 
-### Этап 1. Исправить блокирующие ошибки схемы
+### Stage 1. Resolve blocking schematic issues
 
-- [ ] `BLOCKER` TPS26750 pin 20 `POWER_PATH_EN`: убрать соединение с GND; оставить floating, если функция не используется, либо реализовать рекомендованный buffer/power-path circuit.
-- [ ] `BLOCKER` TPS26750 pin 21 `NC`: убрать соединение с GND.
-- [ ] `BLOCKER` TPS65988 pin 36 `SPI_POCI`: при отсутствии SPI flash заменить pull-up на требуемое соединение с GND.
-- [ ] Получить полный список 1 error/20 warnings schematic DRC и закрыть каждое сообщение.
-- [ ] Решить назначение `BOOT0_MCU` и `NRST_MCU`: реальные кнопки/тестпады или исключение фиктивных символов из BOM/PCB.
-- [ ] Проверить все NC, reserved, thermal pad и unused pins по даташитам.
-- [ ] Проверить отсутствие back-power через I2C/GPIO между AON и отключаемыми доменами.
+- [ ] `BLOCKER` TPS26750 pin 20 `POWER_PATH_EN`: remove the GND connection; leave it floating if unused, or implement the recommended buffer/power-path circuit.
+- [ ] `BLOCKER` TPS26750 pin 21 `NC`: remove the GND connection.
+- [ ] `BLOCKER` TPS65988 pin 36 `SPI_POCI`: when no SPI flash is used, replace the pull-up with the required GND connection.
+- [ ] Obtain the complete schematic DRC list and resolve every error and warning. The latest export reported 1 error and 19 warnings.
+- [ ] Finalize `BOOT0_MCU` and `NRST_MCU`: use real buttons/test pads or exclude placeholder symbols from the BOM and PCB.
+- [ ] Check every NC, reserved, thermal-pad, and unused pin against the datasheets.
+- [ ] Verify that I2C/GPIO connections cannot back-power disabled domains from the always-on domain.
 
-Критерий завершения: схема проходит ERC/DRC без необъяснённых ошибок, все intentional warnings документированы.
+Completion criterion: schematic ERC/DRC has no unexplained errors, and every intentional warning is documented.
 
-### Этап 2. Завершить незаконченные функциональные блоки
+### Stage 2. Complete unfinished functional blocks
 
-- [ ] `BLOCKER` Полностью подключить TPS65987D (`U4`): питание, CC, VBUS/PP_HV, cable power, I2C, reset, protection и policy.
-- [ ] `BLOCKER` Полностью подключить TMUXHS4612 (`U2`): lanes, AUX/DDC, HPD, питание и управляющие входы.
-- [ ] `BLOCKER` Полностью подключить PI2DPX2020 (`U10`): 1.8 V, decoupling, I2C/address, enable, AUX/SBU и high-speed lanes.
-- [ ] Выбрать и рассчитать отдельный 1.8 V regulator от +5 V для PI2DPX2020.
-- [ ] `BLOCKER` Полностью подключить USB2514B (`U9`): питание, crystal/clock, reset, RBIAS, upstream/downstream USB2, straps/SMBus и port power control.
-- [ ] `BLOCKER` Полностью подключить FSUSB42 (`U14`) между laptop D+/D− и upstream USB2514B.
-- [ ] Завершить USB-A и downstream USB-C цепи питания, OCS/FAULT и MCU override.
-- [ ] Завершить HPD path и определить поведение при переключении.
-- [ ] Завершить MCU GPIO map: enable, reset, fault, IRQ, HPD, mux select, display и encoder.
+- [ ] `BLOCKER` Fully connect TPS65987D (`U4`): power, CC, VBUS/PP_HV, cable power, I2C, reset, protection, and policy.
+- [ ] `BLOCKER` Fully connect TMUXHS4612 (`U2`): lanes, AUX/DDC, HPD, power, and control inputs.
+- [ ] `BLOCKER` Fully connect PI2DPX2020 (`U10`): 1.8 V supply, decoupling, I2C/address, enable, AUX/SBU, and high-speed lanes.
+- [ ] Select and calculate a dedicated 1.8 V regulator from +5 V for PI2DPX2020.
+- [ ] `BLOCKER` Fully connect USB2514B (`U9`): power, crystal/clock, reset, RBIAS, upstream/downstream USB2, straps/SMBus, and port-power control.
+- [ ] `BLOCKER` Fully connect FSUSB42 (`U14`) between the laptop D+/D− lines and the USB2514B upstream port.
+- [ ] Complete the USB-A and downstream USB-C power paths, OCS/FAULT handling, and MCU override.
+- [ ] Complete the HPD path and define switching behavior.
+- [ ] Complete the MCU GPIO map: enable, reset, fault, IRQ, HPD, mux selection, display, and encoder.
 
-Критерий завершения: у каждого функционального узла есть питание, decoupling, управление и полный signal path; неиспользуемые выводы обработаны по даташиту.
+Completion criterion: every functional block has power, decoupling, control, and a complete signal path; unused pins are handled according to the datasheet.
 
-### Этап 3. Проверить питание и USB-C PD
+### Stage 3. Verify power and USB-C PD
 
-- [ ] Составить worst-case power tree и таблицу startup/shutdown sequencing.
-- [ ] Зафиксировать допустимые входные профили и проверить весь USB-C0 тракт TPS26750/TPD4S480/TPS26630 для заявленного диапазона до 48 V.
-- [ ] Проверить hardware OVP/eFuse между входом и downstream converters.
-- [ ] Завершить замену оставшихся TPS55288 на BQ25756 и получить четыре одинаковых управляемых канала.
-- [ ] Рассчитать каждый BQ25756: токи ключей/дросселя, shunt, ILIM, MOSFET losses, выходные конденсаторы и thermal margin.
-- [ ] Проверить DC-bias всех MLCC, особенно 20 V VBUS rails.
-- [ ] Рассчитать бюджет `+3V3_MCU` и `+3V3_SYS`; подтвердить запас LMR51610Y/AP2553.
-- [ ] Проверить discharge, reverse current, dead-battery и fault behavior всех Type-C портов.
-- [ ] Зафиксировать PDO/APDO tables и алгоритм распределения мощности между портами.
+- [ ] Create a worst-case power tree and startup/shutdown sequencing table.
+- [ ] Define the allowed input profiles and verify the entire TPS26750/TPD4S480/TPS26630 USB-C0 path for the claimed range up to 48 V.
+- [ ] Verify hardware OVP/eFuse protection between the input and downstream converters.
+- [ ] Replace the remaining TPS55288 devices with BQ25756 and obtain four identical, controllable channels.
+- [ ] Calculate each BQ25756 channel: MOSFET and inductor currents, shunts, ILIM, MOSFET losses, output capacitors, and thermal margin.
+- [ ] Check DC-bias derating for all MLCCs, especially on the 20 V VBUS rails.
+- [ ] Calculate the `+3V3_MCU` and `+3V3_SYS` budgets and confirm LMR51610Y/AP2553 margin.
+- [ ] Verify discharge, reverse-current, dead-battery, and fault behavior for every Type-C port.
+- [ ] Document PDO/APDO tables and the power-allocation algorithm.
 
-Критерий завершения: power tree работает во всех режимах 5/9/15/20/28/36 V без превышения absolute/recommended limits.
+Completion criterion: the power tree operates in all 5/9/15/20/28/36 V modes without exceeding absolute or recommended limits.
 
-### Этап 4. Синхронизировать PCB со схемой
+### Stage 4. Synchronize the PCB with the schematic
 
-- [ ] `BLOCKER` Импортировать изменения из актуальной схемы в PCB.
-- [ ] Добавить 33 отсутствующие позиции либо документировать осознанные исключения.
-- [ ] Удалить/заменить лишние старые `U20` и `U21` после проверки, что их функция больше не нужна.
-- [ ] Добиться полного совпадения schematic и PCB netlist.
-- [ ] Обновить актуальный BOM после синхронизации.
+- [ ] `BLOCKER` Import the current schematic changes into the PCB.
+- [ ] Add the 33 missing parts or document each intentional exclusion.
+- [ ] Remove or replace legacy `U20` and `U21` after verifying that their functions are no longer required.
+- [ ] Make the schematic and PCB netlists match exactly.
+- [ ] Generate an updated BOM after synchronization.
 
-Критерий завершения: EasyEDA DRC не показывает `PCB and schematic netlist does not match`.
+Completion criterion: EasyEDA DRC no longer reports `PCB and schematic netlist does not match`.
 
-### Этап 5. Stackup и правила high-speed
+### Stage 5. Stackup and high-speed rules
 
-- [ ] `BLOCKER` Отказаться от текущего двухслойного stackup для финальной DP2.1 платы.
-- [ ] Выбрать производимый JLCPCB stackup, ориентировочно 6 или более слоёв.
-- [ ] Получить у JLCPCB геометрию controlled-impedance traces для выбранного stackup.
-- [ ] Создать net classes для power, USB2, I2C/GPIO, DP AUX и high-speed lanes.
-- [ ] Создать все DP/USB differential pairs с правильной полярностью.
-- [ ] Задать impedance, width/gap, clearance, via и length/skew constraints.
-- [ ] Зафиксировать допустимые polarity swaps и lane mapping в схеме и firmware configuration.
+- [ ] `BLOCKER` Do not use the current two-layer stackup for the final DP2.1 board.
+- [ ] Select a manufacturable JLCPCB stackup, provisionally six or more layers.
+- [ ] Obtain controlled-impedance trace geometry from JLCPCB for the selected stackup.
+- [ ] Create net classes for power, USB2, I2C/GPIO, DP AUX, and high-speed lanes.
+- [ ] Create every DP/USB differential pair with correct polarity.
+- [ ] Define impedance, width/gap, clearance, via, and length/skew constraints.
+- [ ] Document allowed polarity swaps and lane mapping in the schematic and firmware configuration.
 
-Критерий завершения: все high-speed сети имеют явные правила, а stackup подтверждён изготовителем.
+Completion criterion: every high-speed net has explicit rules and the manufacturer has confirmed the stackup.
 
-### Этап 6. Placement и routing
+### Stage 6. Placement and routing
 
-- [ ] Зафиксировать размеры платы, положение разъёмов и ограничения корпуса.
-- [ ] Проверить footprint/pin numbering каждого разъёма по официальному drawing и физическому образцу.
-- [ ] Разместить ESD/OVP максимально близко к разъёмам.
-- [ ] Разместить decoupling по рекомендациям даташитов.
-- [ ] Разместить buck-boost power stages с минимальными hot loops.
-- [ ] Развести DP2.1/USB high-speed channel с непрерывными return paths и минимальным числом переходов.
-- [ ] Развести USB2, I2C, clocks и control signals.
-- [ ] Развести power planes, GND, thermal copper и stitching vias.
-- [ ] Настроить copper pours и провести repour.
+- [ ] Finalize board dimensions, connector positions, and enclosure constraints.
+- [ ] Verify every connector footprint and pin number against the official drawing and a physical sample.
+- [ ] Place ESD/OVP devices as close as possible to the connectors.
+- [ ] Place decoupling components according to datasheet recommendations.
+- [ ] Place buck-boost power stages with minimum hot-loop area.
+- [ ] Route the DP2.1/USB high-speed channel with continuous return paths and a minimum number of transitions.
+- [ ] Route USB2, I2C, clocks, and control signals.
+- [ ] Route power planes, ground, thermal copper, and stitching vias.
+- [ ] Configure and repour copper zones.
 
-Критерий завершения: 0 unrouted connections и нет нарушений PCB rules.
+Completion criterion: zero unrouted connections and no PCB-rule violations.
 
-### Этап 7. Инженерная проверка
+### Stage 7. Engineering review
 
-- [ ] Полный PCB DRC.
-- [ ] Независимая schematic review.
-- [ ] Signal-integrity review DP2.1, AUX/HPD и USB2.
-- [ ] Power-integrity и voltage-drop review.
-- [ ] Thermal review converters, MOSFET, shunts, connectors и PD controllers.
-- [ ] EMC/ESD review и план pre-compliance testing.
+- [ ] Complete PCB DRC.
+- [ ] Independent schematic review.
+- [ ] Signal-integrity review for DP2.1, AUX/HPD, and USB2.
+- [ ] Power-integrity and voltage-drop review.
+- [ ] Thermal review of converters, MOSFETs, shunts, connectors, and PD controllers.
+- [ ] EMC/ESD review and pre-compliance test plan.
 - [ ] Mechanical/3D collision review.
-- [ ] Проверка test points и factory programming/recovery interface.
+- [ ] Verify test points and the factory programming/recovery interface.
 
-Критерий завершения: все блокирующие замечания закрыты или документированно приняты.
+Completion criterion: every blocking finding is resolved or explicitly accepted and documented.
 
-### Этап 8. Подготовка JLCPCB PCB+PCBA
+### Stage 8. Prepare JLCPCB PCB+PCBA files
 
-- [ ] Повторно проверить stock, MOQ и lifecycle каждого LCSC part.
-- [ ] Найти производственные замены для отсутствующих TMUXHS4612 и GT-USB-7013C либо оформить consigned parts.
-- [ ] Сократить количество уникальных Extended Parts там, где это не ухудшает проект.
-- [ ] Экспортировать Gerber/drill и проверить Gerber viewer.
-- [ ] Экспортировать BOM и CPL с совпадающими designators.
-- [ ] Проверить rotations, layer и package orientation в JLCPCB viewer.
-- [ ] Подготовить assembly drawing и список DNP.
-- [ ] Заказать сначала малую ревизию прототипа.
+- [ ] Recheck stock, MOQ, and lifecycle for every LCSC part.
+- [ ] Find production substitutes for unavailable TMUXHS4612 and GT-USB-7013C parts, or arrange them as consigned parts.
+- [ ] Reduce the number of unique Extended Parts where doing so does not degrade the design.
+- [ ] Export Gerber/drill files and inspect them in a Gerber viewer.
+- [ ] Export BOM and CPL files with matching designators.
+- [ ] Verify rotations, layers, and package orientations in the JLCPCB viewer.
+- [ ] Prepare an assembly drawing and DNP list.
+- [ ] Order a small prototype revision first.
 
-Критерий завершения: JLCPCB BOM/CPL validation проходит без unmatched/conflicting parts.
+Completion criterion: JLCPCB BOM/CPL validation has no unmatched or conflicting parts.
 
-### Этап 9. Bring-up и firmware
+### Stage 9. Bring-up and firmware
 
-- [ ] Реализовать безопасный MCU startup, watchdog и fault logging.
-- [ ] Реализовать загрузку patch/config TPS26750/TPS65988/TPS65987D с timeout/retry/CRC.
-- [ ] Реализовать BQ25756 configuration и safe output sequencing по отдельным I2C-шинам.
-- [ ] Реализовать PD budget manager и port policy.
-- [ ] Реализовать KVM switching: USB mux, DP mux/redriver и HPD.
-- [ ] Реализовать display/encoder UI.
-- [ ] Подготовить factory test firmware и bring-up checklist.
-- [ ] Проверить USB DFU и SWD recovery.
+- [ ] Implement safe MCU startup, watchdog handling, and fault logging.
+- [ ] Implement TPS26750/TPS65988/TPS65987D patch and configuration loading with timeout, retry, and CRC handling.
+- [ ] Implement BQ25756 configuration and safe output sequencing on separate I2C buses.
+- [ ] Implement the PD power-budget manager and port policy.
+- [ ] Implement KVM switching: USB mux, DP mux/redriver, and HPD.
+- [ ] Implement the display/encoder UI.
+- [ ] Prepare factory-test firmware and a bring-up checklist.
+- [ ] Verify USB DFU and SWD recovery.
 
-## Условия готовности к первому заказу
+## Conditions for the first prototype order
 
-Плата может считаться готовой к первому прототипу только когда одновременно выполнены следующие условия:
+The board may be considered ready for its first prototype only when all of the following are true:
 
-- [ ] Схема завершена и проверена по даташитам.
-- [ ] Schematic и PCB netlist совпадают.
-- [ ] PCB имеет 0 unrouted connections.
-- [ ] PCB DRC не содержит необъяснённых ошибок.
-- [ ] Выбран и подтверждён многослойный controlled-impedance stackup.
-- [ ] High-speed rules и пары настроены.
-- [ ] BOM/CPL валидируются JLCPCB.
-- [ ] Проведены power, thermal, SI, EMC/ESD и mechanical reviews.
-- [ ] Есть bring-up plan, current-limited power-up и точки измерения.
+- [ ] The schematic is complete and checked against the datasheets.
+- [ ] The schematic and PCB netlists match.
+- [ ] The PCB has zero unrouted connections.
+- [ ] PCB DRC contains no unexplained errors.
+- [ ] A multilayer controlled-impedance stackup has been selected and confirmed.
+- [ ] High-speed rules and differential pairs are configured.
+- [ ] The BOM and CPL validate successfully at JLCPCB.
+- [ ] Power, thermal, SI, EMC/ESD, and mechanical reviews are complete.
+- [ ] A bring-up plan, current-limited power-up procedure, and measurement points are available.

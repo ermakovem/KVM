@@ -39,6 +39,8 @@ The upper target for the video path is DisplayPort 2.1/UHBR20. Achieving it depe
 
 ```text
 docs/
+  FUNCTIONAL_ARCHITECTURE.md — functional diagram and accepted design decisions
+  ELECTRICAL_DESIGN_NOTES.md — accepted schematic and electrical implementation notes
   PROJECT_PLAN.md         — completed work and remaining tasks
   PROJECT_PROGRESS.md     — chronological, step-by-step project progress
   BQ25756_MCU_CONTROL.txt — reference for controlling BQ25756 from the MCU
@@ -59,7 +61,7 @@ README.md
 
 ## Current verification status
 
-As of 2026-07-15:
+As of 2026-07-16:
 
 - the current netlist contains 372 components, 223 named nets, and 281 unconnected pins;
 - the MCU has been changed to STM32G474RBT6, with its basic support circuitry and control-signal assignment in place;
@@ -70,7 +72,7 @@ As of 2026-07-15:
 - the PCB is not synchronized with the actively changing schematic;
 - the project must not be submitted to JLCPCB until the schematic, PCB update, routing, and all required reviews are complete.
 
-See [PROJECT_PLAN.md](docs/PROJECT_PLAN.md) for the work plan and [PROJECT_PROGRESS.md](docs/PROJECT_PROGRESS.md) for the project history.
+See [FUNCTIONAL_ARCHITECTURE.md](docs/FUNCTIONAL_ARCHITECTURE.md) for the current architecture and accepted decisions, [ELECTRICAL_DESIGN_NOTES.md](docs/ELECTRICAL_DESIGN_NOTES.md) for implementation details, [PROJECT_PLAN.md](docs/PROJECT_PLAN.md) for the work plan, and [PROJECT_PROGRESS.md](docs/PROJECT_PROGRESS.md) for the project history.
 
 ## JLCPCB manufacturing
 

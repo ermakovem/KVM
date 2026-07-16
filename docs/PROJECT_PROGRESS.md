@@ -197,6 +197,19 @@ Status: **saved on 2026-07-15**.
 - The netlist contains 372 components, 223 named nets, and 281 unconnected pins.
 - EasyEDA reported 1 schematic error and 19 warnings during export; they remain open.
 
+## Step 14. PD control architecture and PD2 checkpoint
+
+Status: **saved on 2026-07-16**.
+
+- Separated system-level decisions into `FUNCTIONAL_ARCHITECTURE.md` and detailed wiring decisions into `ELECTRICAL_DESIGN_NOTES.md`.
+- Assigned the two laptop-port BQ25756 converters to the two independent TPS65988 master I2C buses.
+- Assigned the USB-C3 BQ25756 converter to the TPS65987D master I2C bus.
+- Defined USB-C3 as charging plus USB 2.0 only, with DisplayPort Alt Mode disabled.
+- Recorded the TPS65987D VBUS1/VBUS2 correction, unused-pin handling, boot straps, target/master I2C roles, and the remaining open MCU host-bus connection.
+- Added the selected DSK34 Schottky clamp to USB-C3 and recorded the same requirement for USB-C1 and USB-C2.
+- Exported `hardware/netlists/Netlist_Schematic1_2026-07-16.enet`: 330 components, 231 named nets, and 284 unconnected pins.
+- Saved a portable EasyEDA project backup for the 2026-07-16 checkpoint.
+
 ## Next step
 
-Complete the migration from the remaining TPS55288 devices to a fourth identical BQ25756 channel, then rework PD1/PD2 and their I2C/GPIO connections to the MCU. Export a new netlist and perform a full power-system review before synchronizing the PCB.
+Connect the unresolved MCU host I2C lines to PD2, add and verify the USB-C1/USB-C2 VBUS clamps, then continue the unfinished USB hub and DisplayPort control paths. Export a new netlist and perform a full power-system review before synchronizing the PCB.

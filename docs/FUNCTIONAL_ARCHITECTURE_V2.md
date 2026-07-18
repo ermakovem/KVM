@@ -191,7 +191,7 @@ The internal architecture is divided into exactly six logical blocks:
 6. HUB.
 
 Power converters and protection devices belong to the logical block that owns
-their function. In particular, the fixed system +5 V converter belongs to PD0,
+their function. In particular, the fixed `+5V` converter belongs to PD0,
 although it is configured and controlled by the MCU.
 
 ### Functional block and connector ownership diagram
@@ -241,8 +241,8 @@ although it is configured and controlled by the MCU.
                |                     v      v      v
                |                 [USB-A1][USB-A2][USB-A3]
                |
-               +--> protected power bus and system +5 V
-                    power PD1, PD2, MUX, MCU, and HUB
+               +--> protected power bus and +5V rail
+                    power the downstream functional blocks
 ```
 
 External interface ownership is defined as follows:
@@ -299,7 +299,7 @@ PD0 receives USB-C0 VBUS and produces:
 
 - always-on `+3V3_MCU` for the MCU and PD0 startup domain;
 - the protected common high-voltage power bus;
-- the fixed system `+5V` rail.
+- the fixed `+5V` rail.
 
 #### Responsibilities
 
@@ -307,7 +307,7 @@ PD0 receives USB-C0 VBUS and produces:
 - boot the MCU and PD0 from the initial USB-C0 supply;
 - keep the main load isolated until the input contract is accepted;
 - protect and enable the common power bus;
-- generate the fixed system +5 V rail under MCU control;
+- generate the fixed `+5V` rail under MCU control;
 - report contract, power-good, current-monitor, and fault state to the MCU;
 - safely remove the main power path after a critical input fault.
 
@@ -419,8 +419,8 @@ redriver.
 
 #### Power interfaces
 
-- `+3V3_SYS`;
-- dedicated `+1V8` redriver supply;
+- `+3V3`;
+- a dedicated 1.8 V redriver supply, with its final net name still open;
 - any required local auxiliary rails.
 
 #### Responsibilities
@@ -459,7 +459,7 @@ selects the active KVM input, and allocates the available output power.
 #### Power interfaces
 
 The MCU is powered from the always-on `+3V3_MCU` rail. It must remain operational
-while the main system +5 V and switchable logic rails are disabled.
+while `+5V`, `+3V3`, and the other downstream rails are disabled.
 
 #### Responsibilities
 
@@ -470,7 +470,7 @@ while the main system +5 V and switchable logic rails are disabled.
 - allocate the remaining power according to charging priority;
 - choose the active KVM input;
 - switch the MUX and HUB together;
-- control the fixed system +5 V converter;
+- control the fixed `+5V` converter;
 - respond to faults and input-contract changes;
 - implement the display and encoder user interface.
 
@@ -503,8 +503,8 @@ four-port USB hub, and downstream port-power switches.
 
 #### Power interfaces
 
-- `+3V3_SYS` for hub and selector logic;
-- system `+5V` for downstream USB power;
+- `+3V3` for hub and selector logic;
+- `+5V` for downstream USB power;
 - up to 5 V / 1.5 A reserved for each USB-A port.
 
 PD2, not the HUB, controls the USB-C3 VBUS power path.
@@ -577,10 +577,10 @@ USB-C0 VBUS
                        |
                        +--> PD0 fixed +5 V BQ (controlled by MCU)
                        |         |
-                       |         +--> system +5 V
+                       |         +--> +5V
                        |                   +--> USB-A power: 22.5 W reserved
-                       |                   +--> +3V3_SYS
-                       |                   +--> +1V8 redriver rail
+                       |                   +--> +3V3
+                       |                   +--> dedicated 1.8 V redriver rail
                        |
                        +--> PD1 BQ channel 1
                        |         +--> VBUS_C1
@@ -592,12 +592,12 @@ USB-C0 VBUS
                                  +--> reverse-blocking output path
                                            +--> VBUS_C3
 
-+3V3_SYS:
++3V3:
     +--> PD1 logic
     +--> PD2 logic
     +--> MUX logic
     +--> HUB logic
 
-+1V8:
+Dedicated 1.8 V rail (final net name OPEN):
     +--> DisplayPort redriver
 ```
